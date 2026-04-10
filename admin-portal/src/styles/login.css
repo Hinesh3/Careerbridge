@@ -1,0 +1,182 @@
+/* ===== ADMIN LOGIN PAGE ===== */
+.admin-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #EFF6FF 0%, #F0F9FF 50%, #FFF7ED 100%);
+  padding: 20px;
+}
+
+/* ===== LOGIN CARD ===== */
+.admin-login-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 48px 44px;
+  box-shadow: 0 8px 40px rgba(37,99,235,0.1), 0 1px 4px rgba(0,0,0,0.04);
+  animation: loginCardIn 0.5s ease both;
+}
+
+.admin-login-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.admin-logo {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-logo-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 16px;
+  filter: drop-shadow(0 4px 12px rgba(37,99,235,0.25));
+}
+
+.admin-login-header h1 {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+
+.admin-login-header p {
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+/* ===== ERROR ===== */
+.admin-login-error {
+  padding: 12px 16px;
+  background: var(--error-light);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--radius-sm);
+  color: var(--error);
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+  animation: shake 0.4s ease;
+}
+
+/* ===== FORM ===== */
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.admin-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 0.95rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.admin-input-wrap input {
+  width: 100%;
+  padding: 11px 14px 11px 42px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--dark);
+  background: var(--bg);
+  font-size: 0.95rem;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.admin-input-wrap input::placeholder { color: #94A3B8; }
+
+.admin-input-wrap input:focus {
+  background: white !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1) !important;
+}
+
+/* ===== SUBMIT BUTTON ===== */
+.btn-admin-login {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+  margin-top: 4px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-admin-login::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 0.4s;
+}
+
+.btn-admin-login:hover::after { left: 100%; }
+.btn-admin-login:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,99,235,0.4); }
+.btn-admin-login:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.btn-spinner {
+  display: inline-block;
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes loginCardIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+  .admin-login-card { padding: 32px 24px; }
+}
