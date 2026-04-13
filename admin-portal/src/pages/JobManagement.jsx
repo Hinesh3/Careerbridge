@@ -4,7 +4,7 @@ import '../styles/management.css';
 
 const EMPTY_FORM = {
   title: '', companyName: '', description: '',
-  location: '', type: 'Job', salary: '', requirements: ''
+  location: '', type: 'Job', salary: '', requirements: '', isActive: true
 };
 
 const JobManagement = () => {
@@ -17,18 +17,20 @@ const JobManagement = () => {
   const [formError, setFormError] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('All');
 
   useEffect(() => {
     fetchJobs();
   }, []);
 
+  // Use admin-specific endpoint that returns ALL jobs (not just active)
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/jobs');
+      const res = await axios.get('/api/jobs/admin/all');
       setJobs(res.data);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch jobs:', err);
     } finally {
       setLoading(false);
     }
@@ -50,14 +52,16 @@ const JobManagement = () => {
       location: job.location,
       type: job.type,
       salary: job.salary || '',
-      requirements: (job.requirements || []).join(', ')
+      requirements: (job.requirements || []).join(', '),
+      isActive: job.isActive !== false
     });
     setFormError('');
     setShowModal(true);
   };
 
   const handleFormChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setForm({ ...form, [name]: type === 'checkbox' ? checked : value });
     setFormError('');
   };
 
@@ -94,31 +98,56 @@ const JobManagement = () => {
     }
   };
 
-  const filtered = jobs.filter(j =>
-    j.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    j.companyName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Toggle isActive directly from table
+  const toggleActive = async (job) => {
+    try {
+      await axios.put(`/api/jobs/${job._id}`, { isActive: !job.isActive });
+      setJobs(prev => prev.map(j => j._id === job._id ? { ...j, isActive: !j.isActive } : j));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const filtered = jobs.filter(j => {
+    const matchSearch = j.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      j.companyName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchType = filterType === 'All' || j.type === filterType;
+    return matchSearch && matchType;
+  });
 
   return (
     <div className="management-page">
       <div className="management-topbar">
         <div>
           <h1 className="page-title">Job Management</h1>
-          <p className="page-subtitle">{jobs.length} listings in total</p>
+          <p className="page-subtitle">{jobs.length} listings total · {jobs.filter(j => j.isActive).length} active</p>
         </div>
         <button className="btn-add-primary" onClick={openAdd}>+ Add New Job</button>
       </div>
 
-      {/* Search Bar */}
-      <div className="mgmt-search-wrap">
-        <span className="mgmt-search-icon">🔍</span>
-        <input
-          type="text"
-          placeholder="Search by job title or company..."
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          className="mgmt-search-input"
-        />
+      {/* Search + Filter Row */}
+      <div className="mgmt-filters-row">
+        <div className="mgmt-search-wrap">
+          <span className="mgmt-search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search by job title or company..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="mgmt-search-input"
+          />
+        </div>
+        <div className="role-filter-tabs">
+          {['All', 'Job', 'Internship'].map(t => (
+            <button
+              key={t}
+              className={`role-filter-tab ${filterType === t ? 'active' : ''}`}
+              onClick={() => setFilterType(t)}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Table */}
@@ -142,6 +171,7 @@ const JobManagement = () => {
                 <th>Location</th>
                 <th>Type</th>
                 <th>Salary</th>
+                <th>Status</th>
                 <th>Posted</th>
                 <th>Actions</th>
               </tr>
@@ -166,6 +196,18 @@ const JobManagement = () => {
                     </span>
                   </td>
                   <td className="td-salary">{job.salary || '—'}</td>
+                  <td>
+                    {/* Active toggle switch */}
+                    <label className="toggle-switch" title={job.isActive ? 'Click to deactivate' : 'Click to activate'}>
+                      <input
+                        type="checkbox"
+                        checked={job.isActive !== false}
+                        onChange={() => toggleActive(job)}
+                      />
+                      <span className="toggle-slider"></span>
+                      <span className="toggle-label">{job.isActive !== false ? 'Active' : 'Inactive'}</span>
+                    </label>
+                  </td>
                   <td className="td-date">{new Date(job.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                   <td>
                     <div className="td-actions">
@@ -229,6 +271,12 @@ const JobManagement = () => {
                 <textarea name="description" value={form.description} onChange={handleFormChange}
                   rows="4" placeholder="Describe the role, responsibilities, and what you're looking for..." required />
               </div>
+              <div className="form-group full">
+                <label className="toggle-form-label">
+                  <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleFormChange} />
+                  <span style={{ marginLeft: '8px' }}>Publish immediately (visible to users)</span>
+                </label>
+              </div>
               <div className="modal-footer">
                 <button type="button" className="btn-modal-cancel" onClick={() => setShowModal(false)}>Cancel</button>
                 <button type="submit" className="btn-modal-submit" disabled={formLoading}>
@@ -251,7 +299,7 @@ const JobManagement = () => {
             <div className="confirm-body">
               <div className="confirm-icon">🗑️</div>
               <p>Are you sure you want to delete <strong>"{deleteConfirm.title}"</strong>?</p>
-              <p className="confirm-warn">This action cannot be undone.</p>
+              <p className="confirm-warn">This will also remove all applications for this job.</p>
             </div>
             <div className="modal-footer">
               <button className="btn-modal-cancel" onClick={() => setDeleteConfirm(null)}>Cancel</button>

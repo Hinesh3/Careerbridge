@@ -4,13 +4,21 @@ import '../styles/management.css';
 
 const API = 'http://localhost:5000';
 
+const statusColors = {
+  'Pending': { bg: '#FEF9C3', color: '#854D0E' },
+  'Under Review': { bg: '#EFF6FF', color: '#1D4ED8' },
+  'Hired': { bg: '#F0FDF4', color: '#15803D' },
+  'Rejected': { bg: '#FEF2F2', color: '#DC2626' }
+};
+
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('All');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [viewProfile, setViewProfile] = useState(null);
+  const [viewProfile, setViewProfile] = useState(null);      // { user, applications }
+  const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -25,6 +33,21 @@ const UserManagement = () => {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch full profile + applications for a user
+  const openProfile = async (user) => {
+    setProfileLoading(true);
+    setViewProfile({ user, applications: [] });
+    try {
+      const res = await axios.get(`/api/admin/users/${user._id}`);
+      setViewProfile(res.data);   // { user, applications }
+    } catch (err) {
+      console.error(err);
+      setViewProfile({ user, applications: [] });
+    } finally {
+      setProfileLoading(false);
     }
   };
 
@@ -173,7 +196,7 @@ const UserManagement = () => {
                     <td className="td-date">{formatDate(user.createdAt)}</td>
                     <td>
                       <div className="td-actions">
-                        <button className="btn-view-profile" onClick={() => setViewProfile(user)}>
+                        <button className="btn-view-profile" onClick={() => openProfile(user)}>
                           👁 View
                         </button>
                         <button className="btn-delete" onClick={() => setDeleteConfirm(user)}>
@@ -202,43 +225,44 @@ const UserManagement = () => {
               {/* Header */}
               <div className="profile-modal-hero">
                 <div className="profile-modal-avatar" style={{
-                  background: (roleColors[viewProfile.role] || roleColors.student).bg,
-                  color: (roleColors[viewProfile.role] || roleColors.student).color
+                  background: (roleColors[viewProfile.user?.role] || roleColors.student).bg,
+                  color: (roleColors[viewProfile.user?.role] || roleColors.student).color
                 }}>
-                  {viewProfile.profilePicture
-                    ? <img src={`${API}${viewProfile.profilePicture}`} alt={viewProfile.name} className="profile-modal-avatar-img" />
-                    : viewProfile.name.charAt(0).toUpperCase()
+                  {viewProfile.user?.profilePicture
+                    ? <img src={`${API}${viewProfile.user.profilePicture}`} alt={viewProfile.user?.name} className="profile-modal-avatar-img" />
+                    : viewProfile.user?.name?.charAt(0).toUpperCase()
                   }
                 </div>
                 <div className="profile-modal-info">
-                  <h2>{viewProfile.name}</h2>
-                  <p className="profile-modal-email">{viewProfile.email}</p>
+                  <h2>{viewProfile.user?.name}</h2>
+                  <p className="profile-modal-email">{viewProfile.user?.email}</p>
                   <div className="profile-modal-badges">
                     <span className="role-chip" style={{
-                      background: (roleColors[viewProfile.role] || roleColors.student).bg,
-                      color: (roleColors[viewProfile.role] || roleColors.student).color
+                      background: (roleColors[viewProfile.user?.role] || roleColors.student).bg,
+                      color: (roleColors[viewProfile.user?.role] || roleColors.student).color
                     }}>
-                      {viewProfile.role === 'student' ? '🎓' : '💼'} {viewProfile.role}
+                      {viewProfile.user?.role === 'student' ? '🎓' : '💼'} {viewProfile.user?.role}
                     </span>
-                    {viewProfile.phone && <span className="profile-modal-phone">📞 {viewProfile.phone}</span>}
+                    {viewProfile.user?.phone && <span className="profile-modal-phone">📞 {viewProfile.user.phone}</span>}
                   </div>
                 </div>
               </div>
+              {profileLoading && <div style={{textAlign:'center',padding:'12px',color:'var(--text-light)',fontSize:'0.85rem'}}>Loading details...</div>}
 
               {/* Bio */}
-              {viewProfile.bio && (
+              {viewProfile.user?.bio && (
                 <div className="profile-modal-section">
                   <h4 className="profile-modal-section-title">About</h4>
-                  <p className="profile-modal-bio">{viewProfile.bio}</p>
+                  <p className="profile-modal-bio">{viewProfile.user.bio}</p>
                 </div>
               )}
 
               {/* Skills */}
-              {(viewProfile.skills || []).length > 0 && (
+              {(viewProfile.user?.skills || []).length > 0 && (
                 <div className="profile-modal-section">
                   <h4 className="profile-modal-section-title">Skills</h4>
                   <div className="profile-modal-skills">
-                    {viewProfile.skills.map((s, i) => (
+                    {viewProfile.user.skills.map((s, i) => (
                       <span key={i} className="skill-chip">{s}</span>
                     ))}
                   </div>
@@ -246,11 +270,11 @@ const UserManagement = () => {
               )}
 
               {/* Education */}
-              {(viewProfile.education || []).length > 0 && (
+              {(viewProfile.user?.education || []).length > 0 && (
                 <div className="profile-modal-section">
                   <h4 className="profile-modal-section-title">Education</h4>
                   <div className="profile-modal-entries">
-                    {viewProfile.education.map((edu, i) => (
+                    {viewProfile.user.education.map((edu, i) => (
                       <div key={i} className="profile-modal-entry">
                         <div className="entry-icon">🎓</div>
                         <div>
@@ -264,11 +288,11 @@ const UserManagement = () => {
               )}
 
               {/* Experience */}
-              {(viewProfile.experience || []).length > 0 && (
+              {(viewProfile.user?.experience || []).length > 0 && (
                 <div className="profile-modal-section">
                   <h4 className="profile-modal-section-title">Experience</h4>
                   <div className="profile-modal-entries">
-                    {viewProfile.experience.map((exp, i) => (
+                    {viewProfile.user.experience.map((exp, i) => (
                       <div key={i} className="profile-modal-entry">
                         <div className="entry-icon">💼</div>
                         <div>
@@ -282,9 +306,32 @@ const UserManagement = () => {
                 </div>
               )}
 
+              {/* Applications */}
+              {(viewProfile.applications || []).length > 0 && (
+                <div className="profile-modal-section">
+                  <h4 className="profile-modal-section-title">Applications ({viewProfile.applications.length})</h4>
+                  <div className="profile-modal-apps">
+                    {viewProfile.applications.map((app, i) => {
+                      const sc = statusColors[app.status] || statusColors['Pending'];
+                      return (
+                        <div key={i} className="profile-modal-app-item">
+                          <div>
+                            <div className="profile-modal-app-title">{app.jobId?.title || 'Job Unavailable'}</div>
+                            <div className="profile-modal-app-company">{app.jobId?.companyName} · {app.jobId?.type}</div>
+                          </div>
+                          <span style={{ background: sc.bg, color: sc.color, padding: '3px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                            {app.status}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Empty state */}
-              {!viewProfile.bio && (viewProfile.skills || []).length === 0 &&
-               (viewProfile.education || []).length === 0 && (viewProfile.experience || []).length === 0 && (
+              {!viewProfile.user?.bio && (viewProfile.user?.skills || []).length === 0 &&
+               (viewProfile.user?.education || []).length === 0 && (viewProfile.user?.experience || []).length === 0 && (
                 <div className="profile-modal-empty">
                   <p>This user has not completed their profile yet.</p>
                 </div>
@@ -292,7 +339,7 @@ const UserManagement = () => {
             </div>
 
             <div className="modal-footer">
-              <span className="profile-modal-joined">Joined {formatDate(viewProfile.createdAt)}</span>
+              <span className="profile-modal-joined">Joined {formatDate(viewProfile.user?.createdAt)}</span>
               <button className="btn-modal-cancel" onClick={() => setViewProfile(null)}>Close</button>
             </div>
           </div>

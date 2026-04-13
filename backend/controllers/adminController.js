@@ -2,12 +2,31 @@ const User = require('../models/User');
 const Job = require('../models/Job');
 const Application = require('../models/Application');
 
-// @desc    Get all users
+// @desc    Get all users (excluding admins)
 // @route   GET /api/admin/users
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({ role: { $ne: 'admin' } }).select('-password').sort({ createdAt: -1 });
+    const users = await User.find({ role: { $ne: 'admin' } })
+      .select('-password')
+      .sort({ createdAt: -1 });
     res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Get single user profile with their applications (admin view)
+// @route   GET /api/admin/users/:id
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const applications = await Application.find({ userId: req.params.id })
+      .populate('jobId', 'title companyName location type')
+      .sort({ createdAt: -1 });
+
+    res.json({ user, applications });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -43,6 +62,10 @@ const getStats = async (req, res) => {
 // @route   DELETE /api/admin/users/:id
 const deleteUser = async (req, res) => {
   try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.role === 'admin') return res.status(403).json({ message: 'Cannot delete admin users' });
+
     await User.findByIdAndDelete(req.params.id);
     // Cascade: remove all applications by this user
     await Application.deleteMany({ userId: req.params.id });
@@ -52,4 +75,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, getStats, deleteUser };
+module.exports = { getAllUsers, getUserById, getStats, deleteUser };

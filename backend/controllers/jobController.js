@@ -1,7 +1,7 @@
 const Job = require('../models/Job');
 const Application = require('../models/Application');
 
-// @desc    Get all jobs
+// @desc    Get all active jobs (public - user portal)
 // @route   GET /api/jobs
 const getJobs = async (req, res) => {
   try {
@@ -10,6 +10,27 @@ const getJobs = async (req, res) => {
 
     if (location) filter.location = { $regex: location, $options: 'i' };
     if (type && type !== 'All') filter.type = type;
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { companyName: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const jobs = await Job.find(filter).sort({ createdAt: -1 });
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Get ALL jobs (admin - including inactive)
+// @route   GET /api/jobs/admin/all
+const getAllJobsAdmin = async (req, res) => {
+  try {
+    const { search } = req.query;
+    const filter = {};
+
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -40,7 +61,7 @@ const getJobById = async (req, res) => {
 // @route   POST /api/jobs
 const createJob = async (req, res) => {
   try {
-    const { title, companyName, description, location, type, salary, requirements } = req.body;
+    const { title, companyName, description, location, type, salary, requirements, isActive } = req.body;
 
     if (!title || !companyName || !description || !location || !type) {
       return res.status(400).json({ message: 'All required fields must be filled' });
@@ -54,6 +75,7 @@ const createJob = async (req, res) => {
       type,
       salary,
       requirements: requirements || [],
+      isActive: isActive !== undefined ? isActive : true,
       postedBy: req.user._id
     });
 
@@ -93,4 +115,4 @@ const deleteJob = async (req, res) => {
   }
 };
 
-module.exports = { getJobs, getJobById, createJob, updateJob, deleteJob };
+module.exports = { getJobs, getAllJobsAdmin, getJobById, createJob, updateJob, deleteJob };

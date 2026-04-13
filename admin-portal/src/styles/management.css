@@ -752,6 +752,107 @@
   color: var(--text-light);
 }
 
+/* ===== TOGGLE SWITCH ===== */
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-switch input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 38px;
+  height: 21px;
+  background: #CBD5E1;
+  border-radius: 21px;
+  transition: background 0.25s;
+  flex-shrink: 0;
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  background: white;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--success);
+}
+
+.toggle-switch input:checked + .toggle-slider::after {
+  transform: translateX(17px);
+}
+
+.toggle-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-light);
+  white-space: nowrap;
+}
+
+.toggle-switch input:checked ~ .toggle-label {
+  color: var(--success);
+}
+
+.toggle-form-label {
+  display: flex;
+  align-items: center;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  gap: 0;
+}
+
+.toggle-form-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+/* ===== APP APPLICATIONS IN USER PROFILE MODAL ===== */
+.profile-modal-apps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-modal-app-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.profile-modal-app-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.profile-modal-app-company {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 1px;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {
   .management-page { padding: 24px 20px 48px; }

@@ -1,0 +1,79 @@
+/* ===== GLOBAL RESET & BASE STYLES ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary: #2563EB;
+  --primary-dark: #1D4ED8;
+  --primary-light: #EFF6FF;
+  --secondary: #0EA5E9;
+  --accent: #F97316;
+  --accent-light: #FFF7ED;
+  --success: #22C55E;
+  --success-light: #F0FDF4;
+  --error: #EF4444;
+  --error-light: #FEF2F2;
+  --warning: #EAB308;
+  --dark: #0F172A;
+  --dark-2: #1E293B;
+  --text: #334155;
+  --text-light: #64748B;
+  --border: #E2E8F0;
+  --bg: #F8FAFC;
+  --white: #FFFFFF;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+  --card-shadow-hover: 0 8px 32px rgba(37,99,235,0.12), 0 2px 8px rgba(0,0,0,0.08);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; font-family: var(--font); border: none; outline: none; }
+input, textarea, select {
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+img { max-width: 100%; }
+
+/* ===== PAGE LOADER ===== */
+.page-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: 1.1rem;
+  color: var(--text-light);
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+
+/* ===== UTILITY ===== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
